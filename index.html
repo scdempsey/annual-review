@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Annual Review | Powered by Claude</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- GoatCounter Analytics (free, privacy-friendly) -->
+    <!-- Step 1: Go to https://www.goatcounter.com/ and create a free account -->
+    <!-- Step 2: Replace YOUR-SITE-CODE below with your actual site code -->
+    <script data-goatcounter="https://scdempsey.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Lora', Georgia, serif;
+            background: #faf9f5;
+            min-height: 100vh;
+            color: #141413;
+        }
+        h1, h2, h3, h4, h5, h6, button, label {
+            font-family: 'Poppins', Arial, sans-serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        .pulse {
+            animation: pulse 3s ease-in-out infinite;
+        }
+        ::selection {
+            background: #d97757;
+            color: white;
+        }
+        textarea:focus {
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Analytics: Track completion (anonymous, no personal data)
+        // Uses GoatCounter - free, privacy-friendly analytics
+        const trackCompletion = () => {
+            // GoatCounter event tracking
+            if (window.goatcounter && window.goatcounter.count) {
+                window.goatcounter.count({
+                    path: 'review-completed',
+                    title: 'Review Completed',
+                    event: true
+                });
+            }
+        };
+
+        // Anthropic brand colors
+        const colors = {
+            dark: '#141413',
+            light: '#faf9f5',
+            midGray: '#b0aea5',
+            lightGray: '#e8e6dc',
+            orange: '#d97757',
+            blue: '#6a9bcc',
+            green: '#788c5d'
+        };
+
+        const questions = [
+            {
+                id: 1,
+                title: "What did I change my mind on this year?",
+                subtitle: "The smartest people aren't those with all the right answers—they're the ones who ask the right questions and embrace 'software updates' to their thinking.",
+                tip: "Try this: Open your calendar from January. Look at who you were spending time with, what you were working on. What makes you cringe about that younger version of yourself?",
+                sections: [
+                    { key: 'professional', label: 'Professional', placeholder: 'Beliefs about work, career, business...' },
+                    { key: 'personal', label: 'Personal', placeholder: 'Beliefs about life, relationships, routines...' }
+                ],
+                accent: colors.orange
+            },
+            {
+                id: 2,
+                title: "What created energy this year?",
+                subtitle: "Your outcomes follow your energy. When you lean into things that create natural lift, you produce your best work.",
+                tip: "Focus on how you felt AFTER, not during. Some things drain you in the moment but energize you afterward (like workouts or deep work).",
+                sections: [
+                    { key: 'professional', label: 'Professional', placeholder: 'Projects, tasks, types of work...' },
+                    { key: 'personal', label: 'Personal', placeholder: 'Routines, habits, health practices...' },
+                    { key: 'people', label: 'People', placeholder: 'Who lifted you up, inspired you, energized you...' }
+                ],
+                accent: colors.blue
+            },
+            {
+                id: 3,
+                title: "What drained energy this year?",
+                subtitle: "Identify the 'shower people'—the ones who make you feel like you need to take a shower after spending time with them.",
+                tip: "Look for recurring meetings, back-to-back calls, obligations that felt heavy. These are candidates for elimination or restructuring.",
+                sections: [
+                    { key: 'professional', label: 'Professional', placeholder: 'Meetings, tasks, projects that felt like a grind...' },
+                    { key: 'personal', label: 'Personal', placeholder: 'Habits, obligations, commitments that drained you...' },
+                    { key: 'people', label: 'People', placeholder: 'The "shower people" who left you depleted...' }
+                ],
+                accent: colors.green
+            },
+            {
+                id: 4,
+                title: "What were the boat anchors in my life?",
+                subtitle: "Boat anchors are the mindsets, behaviors, and beliefs holding you back from operating at full power. Cutting the line is often faster than adding something new.",
+                tip: "Ask yourself: If a third party watched me for a week, what would they say is holding me back?",
+                sections: [
+                    { key: 'mindsets', label: 'Mindsets & Beliefs', placeholder: 'Self-limiting beliefs, stories you tell yourself...' },
+                    { key: 'behaviors', label: 'Behaviors & Habits', placeholder: 'Patterns that create drag...' },
+                    { key: 'commitments', label: 'Commitments & Obligations', placeholder: 'Things you said yes to that you shouldn\'t have...' }
+                ],
+                accent: colors.orange
+            },
+            {
+                id: 5,
+                title: "What did I not do because of fear?",
+                subtitle: "Fear is about inexperience, not incapability. It thrives in darkness—shining a light on it makes it smaller.",
+                tip: "Use Tim Ferriss's Fear Setting: List the fear, then write out the downsides if you acted vs. the upsides. You've likely overestimated downsides and underestimated upsides.",
+                sections: [
+                    { key: 'fears', label: 'Things I avoided', placeholder: 'Conversations, decisions, leaps I didn\'t take...' },
+                    { key: 'downsides', label: 'What were the imagined downsides?', placeholder: 'What did I think would happen if I failed...' },
+                    { key: 'upsides', label: 'What were the potential upsides?', placeholder: 'What could have happened if it worked...' }
+                ],
+                accent: colors.blue
+            },
+            {
+                id: 6,
+                title: "What were my greatest hits and worst misses?",
+                subtitle: "Your natural bias skews how you see your year. High performers often only see the misses and ignore the wins.",
+                tip: "For each hit: Why did it work? For each miss: What can you learn? Often hits come from going 'all-in' without leaving room for excuses.",
+                sections: [
+                    { key: 'hits', label: 'Greatest Hits', placeholder: 'Wins, accomplishments, things that worked...' },
+                    { key: 'whyHits', label: 'Why did the hits hit?', placeholder: 'What made these successful...' },
+                    { key: 'misses', label: 'Worst Misses', placeholder: 'Failures, disappointments, things that didn\'t work...' },
+                    { key: 'whyMisses', label: 'Why did the misses miss?', placeholder: 'What went wrong, what can you learn...' }
+                ],
+                accent: colors.green
+            },
+            {
+                id: 7,
+                title: "What did I learn this year?",
+                subtitle: "Zoom out. Synthesize everything from the first 6 questions into 3-10 core learnings you'll carry into the new year.",
+                tip: "These are the portable lessons—the insights that will guide your decisions, priorities, and actions going forward.",
+                sections: [
+                    { key: 'learnings', label: 'Core Learnings', placeholder: 'The big-picture insights from this year...' },
+                    { key: 'carryForward', label: 'What I\'m carrying into next year', placeholder: 'Commitments, intentions, changes I\'m making...' }
+                ],
+                accent: colors.orange
+            }
+        ];
+
+        function ClaudeLogo({ size = 24 }) {
+            return (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2v-6h2v6zm0-8h-6V7h6v2z" fill={colors.orange}/>
+                </svg>
+            );
+        }
+
+        function ProgressBar({ current, total }) {
+            const percentage = ((current) / total) * 100;
+            return (
+                <div style={{
+                    width: '100%',
+                    maxWidth: '600px',
+                    margin: '0 auto 2rem',
+                    padding: '0 1rem'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: '0.5rem',
+                        fontSize: '0.85rem',
+                        color: colors.midGray,
+                        fontFamily: "'Poppins', Arial, sans-serif"
+                    }}>
+                        <span>Question {current} of {total}</span>
+                        <span>{Math.round(percentage)}% complete</span>
+                    </div>
+                    <div style={{
+                        height: '4px',
+                        background: colors.lightGray,
+                        borderRadius: '2px',
+                        overflow: 'hidden'
+                    }}>
+                        <div style={{
+                            height: '100%',
+                            width: `${percentage}%`,
+                            background: colors.orange,
+                            borderRadius: '2px',
+                            transition: 'width 0.3s ease'
+                        }} />
+                    </div>
+                </div>
+            );
+        }
+
+        function IntroScreen({ onStart }) {
+            return (
+                <div className="fade-in" style={{
+                    minHeight: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '2rem',
+                    textAlign: 'center'
+                }}>
+                    <div style={{
+                        maxWidth: '580px'
+                    }}>
+                        {/* Claude branding header */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem',
+                            marginBottom: '2rem'
+                        }}>
+                            <div style={{
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '50%',
+                                background: colors.orange,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontFamily: "'Poppins', Arial, sans-serif",
+                                fontWeight: '600',
+                                fontSize: '1.1rem'
+                            }}>C</div>
+                            <span style={{
+                                fontFamily: "'Poppins', Arial, sans-serif",
+                                fontSize: '1rem',
+                                fontWeight: '500',
+                                color: colors.midGray
+                            }}>Powered by Claude</span>
+                        </div>
+
+                        <h1 style={{
+                            fontSize: 'clamp(2rem, 5vw, 2.75rem)',
+                            fontWeight: '600',
+                            marginBottom: '1rem',
+                            color: colors.dark,
+                            lineHeight: '1.2'
+                        }}>Personal Annual Review</h1>
+
+                        <p style={{
+                            fontSize: '1.15rem',
+                            color: colors.midGray,
+                            marginBottom: '2.5rem',
+                            lineHeight: '1.7'
+                        }}>
+                            7 questions to reflect on your year, extract insights, and set yourself up for an extraordinary year ahead.
+                        </p>
+
+                        <div style={{
+                            background: 'white',
+                            borderRadius: '12px',
+                            padding: '1.5rem',
+                            marginBottom: '2.5rem',
+                            border: `1px solid ${colors.lightGray}`,
+                            textAlign: 'left',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                        }}>
+                            <p style={{
+                                fontSize: '1.05rem',
+                                color: colors.dark,
+                                fontStyle: 'italic',
+                                marginBottom: '1rem',
+                                lineHeight: '1.6'
+                            }}>
+                                "We do not learn from experience. We learn from reflecting on experience."
+                            </p>
+                            <p style={{
+                                fontSize: '0.95rem',
+                                color: colors.midGray
+                            }}>
+                                This framework will take 20-45 minutes. Grab a coffee, find a quiet space, and give yourself permission to think deeply.
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={onStart}
+                            className="pulse"
+                            style={{
+                                background: colors.orange,
+                                color: 'white',
+                                border: 'none',
+                                padding: '1rem 2.5rem',
+                                fontSize: '1.05rem',
+                                fontWeight: '600',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                boxShadow: '0 2px 8px rgba(217, 119, 87, 0.3)'
+                            }}
+                            onMouseOver={e => {
+                                e.target.style.background = '#c56a4d';
+                                e.target.style.boxShadow = '0 4px 12px rgba(217, 119, 87, 0.4)';
+                            }}
+                            onMouseOut={e => {
+                                e.target.style.background = colors.orange;
+                                e.target.style.boxShadow = '0 2px 8px rgba(217, 119, 87, 0.3)';
+                            }}
+                        >
+                            Begin Your Review
+                        </button>
+
+                        {/* Privacy notice */}
+                        <div style={{
+                            marginTop: '2rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem',
+                            color: colors.midGray,
+                            fontSize: '0.85rem'
+                        }}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0110 0v4"/>
+                            </svg>
+                            <span>100% private — your answers never leave your device</span>
+                        </div>
+
+                        <p style={{
+                            marginTop: '1.5rem',
+                            fontSize: '0.85rem',
+                            color: colors.midGray
+                        }}>
+                            Framework by <strong>Sahil Bloom</strong>
+                        </p>
+                    </div>
+                </div>
+            );
+        }
+
+        function QuestionScreen({ question, answers, setAnswers, onNext, onBack, isFirst, isLast }) {
+            const handleChange = (key, value) => {
+                setAnswers(prev => ({
+                    ...prev,
+                    [question.id]: {
+                        ...prev[question.id],
+                        [key]: value
+                    }
+                }));
+            };
+
+            const currentAnswers = answers[question.id] || {};
+
+            return (
+                <div className="fade-in" style={{
+                    minHeight: '100vh',
+                    padding: '2rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    background: colors.light
+                }}>
+                    {/* Header */}
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '0.5rem',
+                        marginBottom: '1.5rem'
+                    }}>
+                        <div style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '50%',
+                            background: colors.orange,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'white',
+                            fontFamily: "'Poppins', Arial, sans-serif",
+                            fontWeight: '600',
+                            fontSize: '0.9rem'
+                        }}>C</div>
+                        <span style={{
+                            fontFamily: "'Poppins', Arial, sans-serif",
+                            fontSize: '0.9rem',
+                            fontWeight: '500',
+                            color: colors.midGray
+                        }}>Claude</span>
+                    </div>
+
+                    <ProgressBar current={question.id} total={7} />
+
+                    <div style={{
+                        flex: 1,
+                        maxWidth: '680px',
+                        margin: '0 auto',
+                        width: '100%'
+                    }}>
+                        <div style={{
+                            marginBottom: '2rem'
+                        }}>
+                            <div style={{
+                                display: 'inline-block',
+                                fontSize: '0.8rem',
+                                color: question.accent,
+                                fontWeight: '600',
+                                marginBottom: '0.75rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.08em',
+                                fontFamily: "'Poppins', Arial, sans-serif",
+                                background: `${question.accent}15`,
+                                padding: '0.35rem 0.75rem',
+                                borderRadius: '4px'
+                            }}>
+                                Question {question.id}
+                            </div>
+                            <h2 style={{
+                                fontSize: 'clamp(1.4rem, 4vw, 1.75rem)',
+                                fontWeight: '600',
+                                marginBottom: '0.75rem',
+                                lineHeight: '1.35',
+                                color: colors.dark
+                            }}>{question.title}</h2>
+                            <p style={{
+                                fontSize: '1.05rem',
+                                color: colors.midGray,
+                                lineHeight: '1.7',
+                                marginBottom: '1.25rem'
+                            }}>{question.subtitle}</p>
+
+                            <div style={{
+                                background: 'white',
+                                borderLeft: `3px solid ${question.accent}`,
+                                padding: '1rem 1.25rem',
+                                borderRadius: '0 8px 8px 0',
+                                boxShadow: '0 1px 4px rgba(0,0,0,0.04)'
+                            }}>
+                                <div style={{
+                                    fontSize: '0.75rem',
+                                    color: question.accent,
+                                    fontWeight: '600',
+                                    marginBottom: '0.35rem',
+                                    fontFamily: "'Poppins', Arial, sans-serif",
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}>Tip</div>
+                                <p style={{
+                                    fontSize: '0.95rem',
+                                    color: colors.dark,
+                                    lineHeight: '1.6'
+                                }}>{question.tip}</p>
+                            </div>
+                        </div>
+
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.5rem'
+                        }}>
+                            {question.sections.map(section => (
+                                <div key={section.key}>
+                                    <label style={{
+                                        display: 'block',
+                                        fontSize: '0.9rem',
+                                        fontWeight: '500',
+                                        marginBottom: '0.5rem',
+                                        color: colors.dark
+                                    }}>{section.label}</label>
+                                    <textarea
+                                        value={currentAnswers[section.key] || ''}
+                                        onChange={(e) => handleChange(section.key, e.target.value)}
+                                        placeholder={section.placeholder}
+                                        style={{
+                                            width: '100%',
+                                            minHeight: '110px',
+                                            padding: '1rem',
+                                            fontSize: '1rem',
+                                            fontFamily: "'Lora', Georgia, serif",
+                                            background: 'white',
+                                            border: `1px solid ${colors.lightGray}`,
+                                            borderRadius: '8px',
+                                            color: colors.dark,
+                                            resize: 'vertical',
+                                            lineHeight: '1.7',
+                                            transition: 'border-color 0.2s, box-shadow 0.2s'
+                                        }}
+                                        onFocus={e => {
+                                            e.target.style.borderColor = question.accent;
+                                            e.target.style.boxShadow = `0 0 0 3px ${question.accent}20`;
+                                        }}
+                                        onBlur={e => {
+                                            e.target.style.borderColor = colors.lightGray;
+                                            e.target.style.boxShadow = 'none';
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            marginTop: '2rem',
+                            gap: '1rem'
+                        }}>
+                            {!isFirst && (
+                                <button
+                                    onClick={onBack}
+                                    style={{
+                                        background: 'white',
+                                        color: colors.dark,
+                                        border: `1px solid ${colors.lightGray}`,
+                                        padding: '0.875rem 1.5rem',
+                                        fontSize: '0.95rem',
+                                        fontWeight: '500',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        fontFamily: "'Poppins', Arial, sans-serif"
+                                    }}
+                                    onMouseOver={e => e.target.style.background = colors.lightGray}
+                                    onMouseOut={e => e.target.style.background = 'white'}
+                                >
+                                    Back
+                                </button>
+                            )}
+                            <button
+                                onClick={onNext}
+                                style={{
+                                    background: colors.orange,
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.875rem 2rem',
+                                    fontSize: '0.95rem',
+                                    fontWeight: '600',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    marginLeft: 'auto',
+                                    transition: 'all 0.2s',
+                                    boxShadow: '0 2px 8px rgba(217, 119, 87, 0.25)',
+                                    fontFamily: "'Poppins', Arial, sans-serif"
+                                }}
+                                onMouseOver={e => {
+                                    e.target.style.background = '#c56a4d';
+                                    e.target.style.transform = 'translateY(-1px)';
+                                }}
+                                onMouseOut={e => {
+                                    e.target.style.background = colors.orange;
+                                    e.target.style.transform = 'translateY(0)';
+                                }}
+                            >
+                                {isLast ? 'Complete Review' : 'Continue'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function SummaryScreen({ answers, onRestart, onEdit }) {
+            const [copied, setCopied] = useState(false);
+
+            // Track completion when summary screen loads
+            useEffect(() => {
+                trackCompletion();
+            }, []);
+
+            const generateText = () => {
+                let text = "PERSONAL ANNUAL REVIEW\n";
+                text += "Framework by Sahil Bloom | Powered by Claude\n";
+                text += "=".repeat(50) + "\n\n";
+
+                questions.forEach(q => {
+                    text += `QUESTION ${q.id}: ${q.title}\n`;
+                    text += "-".repeat(40) + "\n";
+                    const qAnswers = answers[q.id] || {};
+                    q.sections.forEach(s => {
+                        if (qAnswers[s.key]) {
+                            text += `\n${s.label}:\n${qAnswers[s.key]}\n`;
+                        }
+                    });
+                    text += "\n\n";
+                });
+
+                text += "=".repeat(50) + "\n";
+                text += "Created with Claude | anthropic.com\n";
+                return text;
+            };
+
+            const downloadAsText = () => {
+                const text = generateText();
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'personal-annual-review.txt';
+                a.click();
+                URL.revokeObjectURL(url);
+            };
+
+            const copyToClipboard = async () => {
+                const text = generateText();
+                try {
+                    await navigator.clipboard.writeText(text);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                } catch (err) {
+                    // Fallback for older browsers
+                    const textarea = document.createElement('textarea');
+                    textarea.value = text;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                }
+            };
+
+            return (
+                <div className="fade-in" style={{
+                    minHeight: '100vh',
+                    padding: '2rem',
+                    background: colors.light
+                }}>
+                    <div style={{
+                        maxWidth: '760px',
+                        margin: '0 auto'
+                    }}>
+                        {/* Header */}
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.5rem',
+                            marginBottom: '2rem'
+                        }}>
+                            <div style={{
+                                width: '28px',
+                                height: '28px',
+                                borderRadius: '50%',
+                                background: colors.orange,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: 'white',
+                                fontFamily: "'Poppins', Arial, sans-serif",
+                                fontWeight: '600',
+                                fontSize: '0.9rem'
+                            }}>C</div>
+                            <span style={{
+                                fontFamily: "'Poppins', Arial, sans-serif",
+                                fontSize: '0.9rem',
+                                fontWeight: '500',
+                                color: colors.midGray
+                            }}>Claude</span>
+                        </div>
+
+                        <div style={{
+                            textAlign: 'center',
+                            marginBottom: '2.5rem'
+                        }}>
+                            <div style={{
+                                width: '56px',
+                                height: '56px',
+                                borderRadius: '50%',
+                                background: colors.green,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 1rem',
+                                fontSize: '1.5rem'
+                            }}>✓</div>
+                            <h1 style={{
+                                fontSize: 'clamp(1.5rem, 4vw, 2rem)',
+                                fontWeight: '600',
+                                marginBottom: '0.75rem',
+                                color: colors.dark
+                            }}>Your Review is Complete</h1>
+                            <p style={{
+                                fontSize: '1.05rem',
+                                color: colors.midGray,
+                                maxWidth: '480px',
+                                margin: '0 auto',
+                                lineHeight: '1.6'
+                            }}>
+                                You've done the hard work of reflection. Here's everything you captured to reference as you move into the new year.
+                            </p>
+                        </div>
+
+                        <div style={{
+                            display: 'flex',
+                            gap: '0.75rem',
+                            justifyContent: 'center',
+                            marginBottom: '2.5rem',
+                            flexWrap: 'wrap'
+                        }}>
+                            <button
+                                onClick={copyToClipboard}
+                                style={{
+                                    background: colors.orange,
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.875rem 1.5rem',
+                                    fontSize: '0.95rem',
+                                    fontWeight: '600',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontFamily: "'Poppins', Arial, sans-serif",
+                                    transition: 'all 0.2s',
+                                    minWidth: '160px'
+                                }}
+                                onMouseOver={e => e.target.style.background = '#c56a4d'}
+                                onMouseOut={e => e.target.style.background = colors.orange}
+                            >
+                                {copied ? '✓ Copied!' : 'Copy to Clipboard'}
+                            </button>
+                            <button
+                                onClick={downloadAsText}
+                                style={{
+                                    background: 'white',
+                                    color: colors.dark,
+                                    border: `1px solid ${colors.lightGray}`,
+                                    padding: '0.875rem 1.5rem',
+                                    fontSize: '0.95rem',
+                                    fontWeight: '500',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontFamily: "'Poppins', Arial, sans-serif",
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseOver={e => e.target.style.background = colors.lightGray}
+                                onMouseOut={e => e.target.style.background = 'white'}
+                            >
+                                Download File
+                            </button>
+                            <button
+                                onClick={() => onEdit(1)}
+                                style={{
+                                    background: 'white',
+                                    color: colors.dark,
+                                    border: `1px solid ${colors.lightGray}`,
+                                    padding: '0.875rem 1.5rem',
+                                    fontSize: '0.95rem',
+                                    fontWeight: '500',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    fontFamily: "'Poppins', Arial, sans-serif",
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseOver={e => e.target.style.background = colors.lightGray}
+                                onMouseOut={e => e.target.style.background = 'white'}
+                            >
+                                Edit Answers
+                            </button>
+                        </div>
+
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1.5rem'
+                        }}>
+                            {questions.map(q => {
+                                const qAnswers = answers[q.id] || {};
+                                const hasContent = q.sections.some(s => qAnswers[s.key]);
+
+                                if (!hasContent) return null;
+
+                                return (
+                                    <div key={q.id} style={{
+                                        background: 'white',
+                                        border: `1px solid ${colors.lightGray}`,
+                                        borderRadius: '12px',
+                                        padding: '1.5rem',
+                                        boxShadow: '0 1px 4px rgba(0,0,0,0.03)'
+                                    }}>
+                                        <div style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'flex-start',
+                                            marginBottom: '1rem'
+                                        }}>
+                                            <div>
+                                                <span style={{
+                                                    fontSize: '0.75rem',
+                                                    color: q.accent,
+                                                    fontWeight: '600',
+                                                    fontFamily: "'Poppins', Arial, sans-serif",
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.05em'
+                                                }}>Question {q.id}</span>
+                                                <h3 style={{
+                                                    fontSize: '1.05rem',
+                                                    fontWeight: '600',
+                                                    marginTop: '0.25rem',
+                                                    color: colors.dark
+                                                }}>{q.title}</h3>
+                                            </div>
+                                            <button
+                                                onClick={() => onEdit(q.id)}
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    color: colors.midGray,
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.85rem',
+                                                    fontFamily: "'Poppins', Arial, sans-serif",
+                                                    padding: '0.25rem 0.5rem',
+                                                    borderRadius: '4px',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                                onMouseOver={e => {
+                                                    e.target.style.background = colors.lightGray;
+                                                    e.target.style.color = colors.dark;
+                                                }}
+                                                onMouseOut={e => {
+                                                    e.target.style.background = 'none';
+                                                    e.target.style.color = colors.midGray;
+                                                }}
+                                            >
+                                                Edit
+                                            </button>
+                                        </div>
+
+                                        <div style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '1rem'
+                                        }}>
+                                            {q.sections.map(s => {
+                                                if (!qAnswers[s.key]) return null;
+                                                return (
+                                                    <div key={s.key}>
+                                                        <div style={{
+                                                            fontSize: '0.8rem',
+                                                            color: q.accent,
+                                                            fontWeight: '500',
+                                                            marginBottom: '0.35rem',
+                                                            fontFamily: "'Poppins', Arial, sans-serif"
+                                                        }}>{s.label}</div>
+                                                        <p style={{
+                                                            color: colors.dark,
+                                                            lineHeight: '1.7',
+                                                            whiteSpace: 'pre-wrap'
+                                                        }}>{qAnswers[s.key]}</p>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Footer attribution */}
+                        <div style={{
+                            marginTop: '3rem',
+                            textAlign: 'center',
+                            padding: '2rem',
+                            background: 'white',
+                            borderRadius: '12px',
+                            border: `1px solid ${colors.lightGray}`
+                        }}>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.5rem',
+                                marginBottom: '1rem'
+                            }}>
+                                <div style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    background: colors.orange,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: 'white',
+                                    fontFamily: "'Poppins', Arial, sans-serif",
+                                    fontWeight: '600',
+                                    fontSize: '1rem'
+                                }}>C</div>
+                                <span style={{
+                                    fontFamily: "'Poppins', Arial, sans-serif",
+                                    fontSize: '1rem',
+                                    fontWeight: '600',
+                                    color: colors.dark
+                                }}>Claude</span>
+                            </div>
+                            <p style={{
+                                color: colors.midGray,
+                                fontSize: '0.9rem',
+                                marginBottom: '0.5rem'
+                            }}>
+                                Framework by <strong style={{ color: colors.dark }}>Sahil Bloom</strong>
+                            </p>
+                            <p style={{
+                                color: colors.midGray,
+                                fontSize: '0.85rem'
+                            }}>
+                                anthropic.com
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function App() {
+            const [screen, setScreen] = useState('intro');
+            const [currentQuestion, setCurrentQuestion] = useState(1);
+            const [answers, setAnswers] = useState({});
+
+            const handleStart = () => {
+                setScreen('questions');
+                setCurrentQuestion(1);
+            };
+
+            const handleNext = () => {
+                if (currentQuestion < 7) {
+                    setCurrentQuestion(prev => prev + 1);
+                } else {
+                    setScreen('summary');
+                }
+            };
+
+            const handleBack = () => {
+                if (currentQuestion > 1) {
+                    setCurrentQuestion(prev => prev - 1);
+                }
+            };
+
+            const handleEdit = (questionId) => {
+                setCurrentQuestion(questionId);
+                setScreen('questions');
+            };
+
+            const handleRestart = () => {
+                setAnswers({});
+                setCurrentQuestion(1);
+                setScreen('intro');
+            };
+
+            if (screen === 'intro') {
+                return <IntroScreen onStart={handleStart} />;
+            }
+
+            if (screen === 'summary') {
+                return (
+                    <SummaryScreen
+                        answers={answers}
+                        onRestart={handleRestart}
+                        onEdit={handleEdit}
+                    />
+                );
+            }
+
+            const question = questions.find(q => q.id === currentQuestion);
+            return (
+                <QuestionScreen
+                    key={currentQuestion}
+                    question={question}
+                    answers={answers}
+                    setAnswers={setAnswers}
+                    onNext={handleNext}
+                    onBack={handleBack}
+                    isFirst={currentQuestion === 1}
+                    isLast={currentQuestion === 7}
+                />
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
